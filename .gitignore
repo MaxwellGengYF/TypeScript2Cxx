@@ -37,3 +37,7 @@ compile_commands.json
 /packages/tsc-cxx/cpplib
 /packages/tsc-cxx/node_modules
 __build
+test/test.h
+test/test.cpp
+test/func.h
+test/func.cpp

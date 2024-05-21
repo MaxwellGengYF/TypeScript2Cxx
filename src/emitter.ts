@@ -1367,7 +1367,6 @@ export class Emitter {
         this.writer.EndOfStatement();
 
         this.writer.writeStringNewLine();
-
         if (node.modifiers && node.modifiers.some(m => m.kind === ts.SyntaxKind.DefaultKeyword)) {
             this.writer.writeString('using _default = ');
             this.processIdentifier(node.name);
@@ -1620,11 +1619,11 @@ export class Emitter {
         this.writer.writeStringNewLine('\"');
 
         if (node.importClause) {
-            if (node.importClause.name && node.importClause.name.kind === ts.SyntaxKind.Identifier) {
-                this.writer.writeString('using ');
-                this.processExpression(node.importClause.name);
-                this.writer.writeStringNewLine(' = _default;');
-            }
+            // if (node.importClause.name && node.importClause.name.kind === ts.SyntaxKind.Identifier) {
+            //     this.writer.writeString('using ');
+            //     this.processExpression(node.importClause.name);
+            //     this.writer.writeStringNewLine(' = _default;');
+            // }
 
             if (node.importClause.namedBindings
                 && node.importClause.namedBindings.kind === ts.SyntaxKind.NamedImports) {
