@@ -28,6 +28,8 @@ __build_win32_release
 *.pdb
 *.ipch
 *.bin
+.cache
+.xmake
 out
 out1
 /packages/tsc-cxx/lib
