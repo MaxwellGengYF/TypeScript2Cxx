@@ -135,3 +135,31 @@ if not _config_project then
         end
     end
 end
+
+rule('codegen_ts')
+set_extensions(".ts")
+on_buildcmd_file(function(target, batchcmds, sourcefile, opt)
+    local js_dir = path.translate(target:extraconf("rules", "codegen_ts", "script_dir"))
+    local lib = import('lib')
+    local sb = lib.StringBuilder('node ')
+    sb:add(js_dir):add(' '):add(sourcefile)
+    batchcmds:vrunv(sb:to_string())
+    batchcmds:show('generating ' .. sourcefile)
+    sb:dispose()
+end)
+rule_end()
+
+rule('compile_ts')
+set_extensions(".ts")
+on_buildcmd_file(function(target, batchcmds, sourcefile, opt)
+    local lib = import('lib')
+    local out_file = path.join(path.directory(sourcefile), path.basename(sourcefile) .. '.cpp')
+    local objectfile = target:objectfile(out_file)
+    table.insert(target:objectfiles(), objectfile)
+    batchcmds:show("compiling " .. sourcefile)
+    batchcmds:add_depfiles(out_file)
+    batchcmds:set_depmtime(os.mtime(objectfile))
+    batchcmds:set_depcache(target:dependfile(objectfile))
+    batchcmds:compile(out_file, objectfile)
+end)
+rule_end()
