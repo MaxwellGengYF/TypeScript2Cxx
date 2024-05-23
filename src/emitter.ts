@@ -1388,14 +1388,26 @@ export class Emitter {
             this.writer.writeStringNewLine(';');
         }
         // WIP
-        for (const member of (<any[]><any>node.members)) {
-            this.processRegistRef(member, node);
+        if (node.members.length > 0) {
+            this.writer.writeStringNewLine();
+            this.writer.writeString("BEGIN_REGIST(")
+            this.processIdentifier(node.name);
+            this.writer.writeString(")")
+            this.writer.writeStringNewLine();
+            for (const member of (<any[]><any>node.members)) {
+                this.processRegistRef(member, node);
+            }
+            
+            this.writer.writeString("END_REGIST(")
+            this.processIdentifier(node.name);
+            this.writer.writeString(")")
+            this.writer.writeStringNewLine();
         }
     }
 
     private processRegistDeclaration(node: ts.PropertyDeclaration | ts.PropertySignature | ts.ParameterDeclaration, class_node: ts.ClassDeclaration | ts.InterfaceDeclaration): void {
         const isStatic = this.isStatic(node);
-        if(isStatic) return;
+        if (isStatic) return;
         const typeIn = node.type
             || this.resolver.getOrResolveTypeOfAsTypeNode(node.initializer);
         let type: ts.TypeNode | ts.ParameterDeclaration | ts.TypeParameterDeclaration | ts.Expression = typeIn;
@@ -1419,9 +1431,6 @@ export class Emitter {
         }
         // REGIST_TYPE
         this.writer.writeString(")");
-
-        this.writer.EndOfStatement();
-
         this.writer.writeStringNewLine();
     }
 

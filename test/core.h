@@ -4031,5 +4031,8 @@ struct WebGLTexture {
 
 // end of HTML
 }// namespace js
+// TODO: GC
+#define BEGIN_REGIST(type)
 #define REGIST_TYPE(type, v)
+#define END_REGIST(type)
 #endif// CORE_H
