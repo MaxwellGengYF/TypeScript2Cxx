@@ -1,3 +1,13 @@
+class Point {
+  x: number;
+  y: number;
+}
+class Area {
+  x: Point;
+}
+ 
 export default function helloWorld() {
-    console.log("Hello, world!");
-  }
+  const pt = new Area();  
+  pt.x = new Point();
+  console.log("Hello, world!");
+}

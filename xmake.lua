@@ -18,6 +18,7 @@ _config_project({
     project_kind = 'binary',
     enable_exception = true
 })
+add_rules("c++")
 set_pcxxheader('test/core.h')
 add_files('test/*.ts')
 add_rules('compile_ts')

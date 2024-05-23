@@ -4031,5 +4031,5 @@ struct WebGLTexture {
 
 // end of HTML
 }// namespace js
-
+#define REGIST_TYPE(type, v)
 #endif// CORE_H

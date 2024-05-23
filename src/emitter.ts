@@ -505,12 +505,12 @@ export class Emitter {
 
             sourceFile.statements.filter(s => !this.isDeclarationStatement(s) && !this.isVariableStatement(s)
                 || this.isNamespaceStatement(s)).forEach(s => {
-                if (this.isNamespaceStatement(s)) {
-                    this.processModuleImplementationInMain(<ts.ModuleDeclaration>s);
-                } else {
-                    this.processStatement(s);
-                }
-            });
+                    if (this.isNamespaceStatement(s)) {
+                        this.processModuleImplementationInMain(<ts.ModuleDeclaration>s);
+                    } else {
+                        this.processStatement(s);
+                    }
+                });
 
             this.isWritingMain = false;
 
@@ -666,6 +666,17 @@ export class Emitter {
             case ts.SyntaxKind.SemicolonClassElement: /*TODO: index*/ return;
         }
 
+        // TODO: finish it
+        throw new Error('Method not implemented.');
+    }
+
+    private processRegistRef(node: ts.Declaration, class_node: ts.ClassDeclaration | ts.InterfaceDeclaration): void {
+        switch (node.kind) {
+            // case ts.SyntaxKind.PropertySignature: this.processPropertyDeclaration(<ts.PropertySignature>node); return;
+            case ts.SyntaxKind.PropertyDeclaration: this.processRegistDeclaration(<ts.PropertyDeclaration>node, class_node); return;
+            // case ts.SyntaxKind.Parameter: this.processPropertyDeclaration(<ts.ParameterDeclaration>node); return;
+        }
+        return;
         // TODO: finish it
         throw new Error('Method not implemented.');
     }
@@ -1352,11 +1363,14 @@ export class Emitter {
             return m.kind === ts.SyntaxKind.PropertyDeclaration && this.hasThis(m);
         };
 
-        for (const member of (<any[]><any>node.members).filter(m => !propertyWithThis(m))) {
-            this.processDeclaration(member);
-        }
+        // for (const member of (<any[]><any>node.members).filter(m => !propertyWithThis(m))) {
+        //     this.processDeclaration(member);
+        // }
 
-        for (const member of (<any[]><any>node.members).filter(m => propertyWithThis(m))) {
+        // for (const member of (<any[]><any>node.members).filter(m => propertyWithThis(m))) {
+        //     this.processDeclaration(member);
+        // }
+        for (const member of (<any[]><any>node.members)) {
             this.processDeclaration(member);
         }
 
@@ -1373,6 +1387,42 @@ export class Emitter {
             this.processTemplateParameters(<ts.ClassDeclaration>node);
             this.writer.writeStringNewLine(';');
         }
+        // WIP
+        for (const member of (<any[]><any>node.members)) {
+            this.processRegistRef(member, node);
+        }
+    }
+
+    private processRegistDeclaration(node: ts.PropertyDeclaration | ts.PropertySignature | ts.ParameterDeclaration, class_node: ts.ClassDeclaration | ts.InterfaceDeclaration): void {
+        const isStatic = this.isStatic(node);
+        if(isStatic) return;
+        const typeIn = node.type
+            || this.resolver.getOrResolveTypeOfAsTypeNode(node.initializer);
+        let type: ts.TypeNode | ts.ParameterDeclaration | ts.TypeParameterDeclaration | ts.Expression = typeIn;
+        if (typeIn && typeIn.kind === ts.SyntaxKind.LiteralType) {
+            type = (<ts.LiteralTypeNode>typeIn).literal;
+        }
+
+        let next;
+        if ((type && type.kind) == ts.SyntaxKind.TypeReference) {
+            this.writer.writeString("REGIST_TYPE(");
+            this.processIdentifier(class_node.name);
+        } else {
+            return;
+        }
+        this.writer.writeString(', ');
+
+        if (node.name.kind === ts.SyntaxKind.Identifier) {
+            this.processExpression(node.name);
+        } else {
+            throw new Error('Not Implemented');
+        }
+        // REGIST_TYPE
+        this.writer.writeString(")");
+
+        this.writer.EndOfStatement();
+
+        this.writer.writeStringNewLine();
     }
 
     private processPropertyDeclaration(node: ts.PropertyDeclaration | ts.PropertySignature | ts.ParameterDeclaration,
@@ -1681,11 +1731,11 @@ export class Emitter {
         const next = { next: false };
         let result = false;
         declarationList.declarations.forEach(d => {
-                result =
-                    this.processVariableDeclarationOne(
-                        d.name, d.initializer, d.type, next, forwardDeclaration, forceCaptureRequired)
-                    || result;
-            } );
+            result =
+                this.processVariableDeclarationOne(
+                    d.name, d.initializer, d.type, next, forwardDeclaration, forceCaptureRequired)
+                || result;
+        });
 
         return result;
     }
@@ -3406,10 +3456,10 @@ export class Emitter {
 
         const leftSouldBePointer = isLeftEnum &&
             (opCode === ts.SyntaxKind.EqualsToken
-            || opCode === ts.SyntaxKind.AmpersandToken
-            || opCode === ts.SyntaxKind.BarEqualsToken
-            || opCode === ts.SyntaxKind.CaretEqualsToken
-            || opCode === ts.SyntaxKind.PercentEqualsToken)
+                || opCode === ts.SyntaxKind.AmpersandToken
+                || opCode === ts.SyntaxKind.BarEqualsToken
+                || opCode === ts.SyntaxKind.CaretEqualsToken
+                || opCode === ts.SyntaxKind.PercentEqualsToken)
 
         if (wrapIntoRoundBrackets) {
             this.writer.writeString('(');
@@ -3624,7 +3674,7 @@ export class Emitter {
         if (this.isWritingMain) {
             const isRightPartOfPropertyAccess = node.parent.kind === ts.SyntaxKind.QualifiedName
                 || node.parent.kind === ts.SyntaxKind.PropertyAccessExpression
-                    && (<ts.PropertyAccessExpression>(node.parent)).name === node;
+                && (<ts.PropertyAccessExpression>(node.parent)).name === node;
             if (!isRightPartOfPropertyAccess) {
                 const identifierSymbol = this.resolver.getSymbolAtLocation(node);
                 const valDecl = identifierSymbol && identifierSymbol.valueDeclaration;

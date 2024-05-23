@@ -62,7 +62,7 @@
         "xtr1common": "cpp",
         "*.ipp": "cpp"
     },
-    "xmake.additionalConfigArguments": [],
+    "xmake.additionalConfigArguments": ["--toolchain=llvm"],
     "C_Cpp.codeAnalysis.runAutomatically": false,
     "C_Cpp.intelliSenseEngine": "Disabled",
     "C_Cpp.formatting": "Disabled",
